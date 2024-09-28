@@ -6,6 +6,7 @@ import { GUI } from "dat.gui";
 const debug = {
   space: {
     radius: 4,
+    count: 6,
   },
   mirrors: {
     rotationY: 0.721,
@@ -68,7 +69,6 @@ const cube = new THREE.Mesh(geometry, material);
 
 // // Hexagon arrangement
 const radius = debug.space.radius;
-const angleStep = Math.PI / 3;
 const video1 = document.getElementById("video1");
 const video2 = document.getElementById("video2");
 video1.play();
@@ -76,92 +76,112 @@ video2.play();
 const videoTexture1 = new THREE.VideoTexture(video1);
 const videoTexture2 = new THREE.VideoTexture(video2);
 
+function isScreen(i) {
+  return i === 0 || i === debug.space.count / 2;
+}
+
 const planes = [];
-for (let i = 0; i < 6; i++) {
-  //   const angle = i * angleStep;
-  //   let x = radius * Math.cos(angle);
-  //   let z = radius * Math.sin(angle);
 
-  const geometry = new THREE.PlaneGeometry(0.9, 1.6);
-  let plane;
+//   const mirrorBack1 = new Reflector(new THREE.PlaneGeometry(2, 2), {
+//     color: new THREE.Color(0x7f7f7f),
+//     textureWidth: window.innerWidth * window.devicePixelRatio,
+//     textureHeight: window.innerHeight * window.devicePixelRatio,
+//   });
 
-  if (i === 0 || i === 3) {
-    const material = new THREE.MeshBasicMaterial({
-      map: i === 0 ? videoTexture1 : videoTexture2,
-      side: THREE.DoubleSide,
-    });
-    plane = new THREE.Mesh(geometry, material);
+//   mirrorBack1.position.y = 1;
+//   mirrorBack1.position.z = -1;
+//   scene.add(mirrorBack1);
 
-    if (i === 0) {
-      geometry.scale(-1, 1, 1);
-      //   geometry.rotateX(Math.PI);
-      //   geometry.rotateZ(Math.PI);
+//   const plane = new THREE.Mesh(geometry, material);
+//   plane.position.set(x, 0, z);
+//   plane.lookAt(0, 0, 0);
+
+//   if (i === 0 || i === 3) {
+//     // Create a box geometry with a small depth
+//     const boxDepth = 0.1;
+//     const frameThickness = plane.geometry.parameters.width / 10;
+//     console.log(plane.geometry.parameters.width);
+//     const boxGeometry = new THREE.BoxGeometry(
+//       plane.geometry.parameters.width + frameThickness,
+//       plane.geometry.parameters.height + frameThickness,
+//       boxDepth
+//     );
+//     const boxMaterial = new THREE.MeshStandardMaterial({ color: 0x4a0b11 });
+//     const box = new THREE.Mesh(boxGeometry, boxMaterial);
+
+//     // Position the box slightly behind the plane
+//     box.position.z = plane.position.z;
+//     box.position.x = plane.position.x;
+//     box.position.y = plane.position.y;
+
+//     box.lookAt(0, 0, 0);
+
+//     const distanceOffset = 0.02;
+//     const distanceFromCenter = boxDepth / 2 + distanceOffset; // Adjust this value as needed
+//     const directionVector = new THREE.Vector3(
+//       box.position.x,
+//       box.position.y,
+//       box.position.z
+//     ).normalize();
+//     box.position.add(directionVector.multiplyScalar(distanceFromCenter));
+//     scene.add(box);
+//   }
+
+//   scene.add(plane);
+//   planes.push(plane);
+// }
+
+function buildSpace() {
+  scene.remove(...planes);
+  planes.length = 0;
+
+  for (let i = 0; i < debug.space.count; i++) {
+    const geometry = new THREE.PlaneGeometry(0.9, 1.6);
+    let plane;
+
+    if (isScreen(i)) {
+      const material = new THREE.MeshBasicMaterial({
+        map: i === 0 ? videoTexture1 : videoTexture2,
+        side: THREE.DoubleSide,
+      });
+      plane = new THREE.Mesh(geometry, material);
+
+      if (i === 0) {
+        geometry.scale(-1, 1, 1);
+        //   geometry.rotateX(Math.PI);
+        //   geometry.rotateZ(Math.PI);
+      }
+    } else {
+      plane = new Reflector(geometry, {
+        color: new THREE.Color(0x7f7f7f),
+        textureWidth: window.innerWidth * window.devicePixelRatio,
+        textureHeight: window.innerHeight * window.devicePixelRatio,
+        multisample: 1,
+      });
     }
-  } else {
-    plane = new Reflector(geometry, {
-      color: new THREE.Color(0x7f7f7f),
-      textureWidth: window.innerWidth * window.devicePixelRatio,
-      textureHeight: window.innerHeight * window.devicePixelRatio,
-    });
+
+    scene.add(plane);
+    planes.push(plane);
   }
 
-  //   const mirrorBack1 = new Reflector(new THREE.PlaneGeometry(2, 2), {
-  //     color: new THREE.Color(0x7f7f7f),
-  //     textureWidth: window.innerWidth * window.devicePixelRatio,
-  //     textureHeight: window.innerHeight * window.devicePixelRatio,
-  //   });
+  console.log(planes);
 
-  //   mirrorBack1.position.y = 1;
-  //   mirrorBack1.position.z = -1;
-  //   scene.add(mirrorBack1);
-
-  //   const plane = new THREE.Mesh(geometry, material);
-  //   plane.position.set(x, 0, z);
-  //   plane.lookAt(0, 0, 0);
-
-  //   if (i === 0 || i === 3) {
-  //     // Create a box geometry with a small depth
-  //     const boxDepth = 0.1;
-  //     const frameThickness = plane.geometry.parameters.width / 10;
-  //     console.log(plane.geometry.parameters.width);
-  //     const boxGeometry = new THREE.BoxGeometry(
-  //       plane.geometry.parameters.width + frameThickness,
-  //       plane.geometry.parameters.height + frameThickness,
-  //       boxDepth
-  //     );
-  //     const boxMaterial = new THREE.MeshStandardMaterial({ color: 0x4a0b11 });
-  //     const box = new THREE.Mesh(boxGeometry, boxMaterial);
-
-  //     // Position the box slightly behind the plane
-  //     box.position.z = plane.position.z;
-  //     box.position.x = plane.position.x;
-  //     box.position.y = plane.position.y;
-
-  //     box.lookAt(0, 0, 0);
-
-  //     const distanceOffset = 0.02;
-  //     const distanceFromCenter = boxDepth / 2 + distanceOffset; // Adjust this value as needed
-  //     const directionVector = new THREE.Vector3(
-  //       box.position.x,
-  //       box.position.y,
-  //       box.position.z
-  //     ).normalize();
-  //     box.position.add(directionVector.multiplyScalar(distanceFromCenter));
-  //     scene.add(box);
-  //   }
-
-  scene.add(plane);
-  planes.push(plane);
+  // updateSpace();
+  // updateMirrors();
+  // updateScreens();
 }
 
 function updateSpace() {
+  console.log("updateSpace");
   const radius = debug.space.radius;
-  const angleStep = Math.PI / 3;
+  const angleStep = (2 * Math.PI) / debug.space.count;
 
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < debug.space.count; i++) {
     const angle = i * angleStep;
     let x = radius * Math.cos(angle);
     let z = radius * Math.sin(angle);
+
+    console.log(planes[i]);
 
     planes[i].position.set(x, 0, z);
     planes[i].lookAt(0, 0, 0);
@@ -173,8 +193,8 @@ function updateMirrors() {
   const offsetZ = debug.mirrors.offsetZ;
   const rotationY = debug.mirrors.rotationY;
 
-  for (let i = 0; i < 6; i++) {
-    if (i == 0 || i == 3) {
+  for (let i = 0; i < debug.space.count; i++) {
+    if (isScreen(i)) {
       continue;
     }
 
@@ -196,7 +216,7 @@ function updateMirrors() {
       planes[i].rotation.y = -rotationY;
     }
 
-    console.log(planes[i]);
+    // console.log(planes[i]);
 
     planes[i].scale.x = debug.mirrors.scaleX;
     planes[i].scale.y = debug.mirrors.scaleY;
@@ -204,8 +224,8 @@ function updateMirrors() {
 }
 
 function updateScreens() {
-  for (let i = 0; i < 6; i++) {
-    if (i !== 0 && i !== 3) {
+  for (let i = 0; i < debug.space.count; i++) {
+    if (!isScreen(i)) {
       continue;
     }
 
@@ -214,12 +234,18 @@ function updateScreens() {
   }
 }
 
-updateSpace();
-updateMirrors();
-updateScreens();
+function resetScene() {
+  buildSpace();
+  updateSpace();
+  updateMirrors();
+  updateScreens();
+}
+
+resetScene();
 
 const gui = new GUI();
 const spaceFolder = gui.addFolder("Space");
+spaceFolder.add(debug.space, "count", 1, 12, 1).onChange(resetScene);
 spaceFolder.add(debug.space, "radius", 0, 10, 0.01).onChange(updateSpace);
 
 const mirrorsFolder = gui.addFolder("Mirrors");
