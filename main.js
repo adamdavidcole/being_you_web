@@ -8,11 +8,11 @@ const debug = {
     radius: 4,
   },
   mirrors: {
-    rotationY: 0.652,
-    offsetX: 2.38,
-    offsetZ: -3.52,
-    scaleX: 1.5,
-    scaleY: 2.1,
+    rotationY: 0.721,
+    offsetX: 2.48,
+    offsetZ: -2.99,
+    scaleX: 1.4000000000000001,
+    scaleY: 2.2800000000000002,
   },
   screens: {
     scale: 3,
@@ -25,9 +25,10 @@ const debug = {
   camera: {
     fov: 75,
   },
-  print: function () {
-    console.log(debug);
-  },
+};
+
+debug.print = function () {
+  console.log(debug);
 };
 
 const scene = new THREE.Scene();
@@ -245,14 +246,8 @@ mirrorsFolder.open();
 screenFolder.open();
 printFolder.open();
 
-// cubeFolder.add(cube.rotation, "y", 0, Math.PI * 2);
-// cubeFolder.add(cube.rotation, "z", 0, Math.PI * 2);
-// const cameraFolder = gui.addFolder("Camera");
-// cameraFolder.add(camera.position, "z", 0, 10);
-// cameraFolder.open();
-
 // Create concentric rings
-const ringCount = 50;
+const ringCount = 8;
 const ringWidth = 1;
 const ringSegments = 64;
 const ringY = -radius;
@@ -275,12 +270,42 @@ for (let i = 0; i < ringCount; i++) {
   scene.add(ring);
 }
 
+// Create vertical rings
+const verticalRingCount = 20;
+const verticalRingWidth = debug.space.radius * 2;
+
+for (let i = 0; i < verticalRingCount; i++) {
+  const innerRadius = verticalRingWidth;
+  const outerRadius = verticalRingWidth + (i + 1) * verticalRingWidth;
+
+  const geometry = new THREE.RingGeometry(
+    innerRadius,
+    outerRadius,
+    ringSegments
+  );
+  const edges = new THREE.EdgesGeometry(geometry);
+  const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+  const ring = new THREE.LineSegments(edges, material);
+
+  ring.rotation.x = Math.PI / 2; // Rotate the ring to lie flat on the floor
+  ring.position.y = ringY + i;
+  scene.add(ring);
+}
+
 camera.position.z = 5;
 controls.update();
 
+// const rotationRadius = 3;
+// const rotationSpeed = 0.0001;
+
 function animate() {
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+  // Calculate the new camera position
+  //   const time = Date.now() * rotationSpeed;
+  //   camera.position.x = rotationRadius * Math.cos(time);
+  //   camera.position.z = rotationRadius * Math.sin(time);
+
+  // Ensure the camera looks at the center
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   // required if controls.enableDamping or controls.autoRotate are set to true
   controls.update();
